@@ -1,15 +1,16 @@
-from flask import Flask, request, abort
+from flask import Flask, request, abort, jsonify
 import json
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
+import sys
 
 
 app = Flask(__name__)
 
-AUTH0_DOMAIN = @TODO_REPLACE_WITH_YOUR_DOMAIN
+AUTH0_DOMAIN = 'andrequites-dev.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = @TODO_REPLACE_WITH_YOUR_API_AUDIENCE
+API_AUDIENCE = 'image'
 
 
 class AuthError(Exception):
@@ -99,6 +100,7 @@ def verify_decode_jwt(token):
                 'code': 'invalid_header',
                 'description': 'Unable to parse authentication token.'
             }, 400)
+
     raise AuthError({
                 'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
@@ -122,3 +124,9 @@ def requires_auth(f):
 def headers(payload):
     print(payload)
     return 'Access Granted'
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
